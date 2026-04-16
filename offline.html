@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Offline - ANU Lost & Found</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ed1c24 0%, #fac923 100%);
+            padding: 20px;
+        }
+
+        .offline-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .offline-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #ed1c24 0%, #fac923 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .offline-message {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .offline-features {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .offline-features h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .feature-item::before {
+            content: '✓';
+            color: #ed1c24;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .retry-button {
+            background: linear-gradient(135deg, #ed1c24 0%, #fac923 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(237, 28, 36, 0.3);
+        }
+
+        .home-button {
+            background: white;
+            color: #ed1c24;
+            border: 2px solid #ed1c24;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .home-button:hover {
+            background: #ed1c24;
+            color: white;
+        }
+
+        .offline-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #ed1c24;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #ed1c24;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📵</div>
+        <div class="status-indicator">You're Offline</div>
+        <h1>No Internet Connection</h1>
+        <p class="offline-message">
+            We can't connect to the Lost & Found system right now. Don't worry! You can continue using the app with cached data.
+        </p>
+
+        <div class="offline-features">
+            <h3>Available Offline:</h3>
+            <div class="feature-item">Browse previously visited pages</div>
+            <div class="feature-item">View saved item listings</div>
+            <div class="feature-item">Access your profile information</div>
+            <div class="feature-item">Read your messages (read-only)</div>
+        </div>
+
+        <button class="retry-button" onclick="retryConnection()">
+            🔄 Try Connecting Again
+        </button>
+        <button class="home-button" onclick="goHome()">
+            🏠 Go to Home Page
+        </button>
+
+        <div class="offline-info">
+            <p>Your data is safely cached. Changes will sync when you're back online.</p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                Connection Status: <span id="connection-status">Checking...</span>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Check internet connectivity
+        function checkConnection() {
+            fetch('/lost_and_found/index.php', { method: 'HEAD' })
+                .then(() => {
+                    document.getElementById('connection-status').textContent = 'Connected ✓';
+                    document.getElementById('connection-status').style.color = '#28a745';
+                })
+                .catch(() => {
+                    document.getElementById('connection-status').textContent = 'Offline ✗';
+                    document.getElementById('connection-status').style.color = '#ed1c24';
+                });
+        }
+
+        function retryConnection() {
+            const btn = event.target;
+            btn.textContent = '⏳ Connecting...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                fetch('/lost_and_found/index.php', { method: 'HEAD' })
+                    .then(() => {
+                        window.location.href = '/lost_and_found/index.php';
+                    })
+                    .catch(() => {
+                        btn.textContent = '🔄 Try Connecting Again';
+                        btn.disabled = false;
+                        alert('Still offline. Please check your connection and try again.');
+                    });
+            }, 1500);
+        }
+
+        function goHome() {
+            // Try to go to cached home page
+            window.location.href = '/lost_and_found/index.php';
+        }
+
+        // Listen for connection status changes
+        window.addEventListener('online', () => {
+            console.log('Back online!');
+            checkConnection();
+            setTimeout(() => {
+                window.location.href = '/lost_and_found/index.php';
+            }, 2000);
+        });
+
+        window.addEventListener('offline', () => {
+            console.log('Went offline');
+            checkConnection();
+        });
+
+        // Initial check
+        checkConnection();
+    </script>
+</body>
+</html>

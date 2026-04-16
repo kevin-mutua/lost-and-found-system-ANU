@@ -1,0 +1,100 @@
+{
+  "name": "ANU Lost and Found",
+  "short_name": "ANU L&F",
+  "description": "Find your lost items or report found ones at ANU campus",
+  "start_url": "/lost_and_found/index.php",
+  "scope": "/lost_and_found/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#ed1c24",
+  "icons": [
+    {
+      "src": "/lost_and_found/assets/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lost_and_found/assets/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lost_and_found/assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lost_and_found/assets/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lost_and_found/assets/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/lost_and_found/assets/images/screenshot-540x720.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/lost_and_found/assets/images/screenshot-1280x720.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["utilities", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Report Item",
+      "short_name": "Report",
+      "description": "Quickly report a lost or found item",
+      "url": "/lost_and_found/report.php?mode=quick",
+      "icons": [
+        {
+          "src": "/lost_and_found/assets/images/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Browse Items",
+      "short_name": "Browse",
+      "description": "Browse lost and found items",
+      "url": "/lost_and_found/search.php",
+      "icons": [
+        {
+          "src": "/lost_and_found/assets/images/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/lost_and_found/share-handler.php",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "image",
+          "accept": ["image/png", "image/jpeg"]
+        }
+      ]
+    }
+  }
+}
