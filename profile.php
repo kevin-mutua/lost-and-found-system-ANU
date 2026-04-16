@@ -85,7 +85,7 @@ $level = getUserLevel($stats['points_earned']);
     </div>
 
     <div class="row">
-        <div class="col-lg-6 col-md-8 col-sm-12 mx-auto" style="max-width: 700px;">
+        <div class="col-lg-8 col-md-10 col-sm-12 mx-auto" style="max-width: 900px;">
             <!-- Profile Card -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body p-4">
@@ -248,6 +248,7 @@ $level = getUserLevel($stats['points_earned']);
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
 
             <!-- Password Change Card -->
             <div class="card border-0 mb-4" style="background: #fdfda8; border-left: 5px solid #ed1c24;">
@@ -325,7 +326,6 @@ $level = getUserLevel($stats['points_earned']);
                     </form>
                 </div>
             </div>
-            <?php endif; ?>
         </div>
     </div>
 </div>
