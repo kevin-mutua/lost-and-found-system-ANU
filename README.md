@@ -8,7 +8,7 @@
 
 ## 📸 System Overview
 
-![ANU Lost and Found System](https://raw.githubusercontent.com/your-repo-url/main/screenshot.png)
+![ANU Lost and Found System](https://raw.githubusercontent.com/lost-and-found-system-ANU/main/screenshot.png)
 
 The **Campus Lost & Found System** is a web-based platform that helps students and campus staff reunite lost items with their owners. It features intelligent automatic matching, real-time notifications, role-based workflows, and a mobile-friendly interface.
 
