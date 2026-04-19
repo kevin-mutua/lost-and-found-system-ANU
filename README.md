@@ -1,426 +1,577 @@
-# ANU Lost & Found System - Presentation Guide
+# 🔍 Campus Lost & Found System
 
-## Executive Summary
+> A modern, intelligent solution for reporting, tracking, and recovering lost items on campus with automatic matching, real-time notifications, and secure claim verification.
 
-Welcome to the **ANU Lost & Found Management System** — a comprehensive digital solution designed to streamline the process of reporting, tracking, and recovering lost items at the African Nazarene University (ANU) campus. This system leverages intelligent matching algorithms, automated notifications, and multi-stage claim verification to reunite lost items with their rightful owners efficiently.
-
----
-
-## Table of Contents
-
-1. [System Overview](#system-overview)
-2. [Problem Statement](#problem-statement)
-3. [Solution Architecture](#solution-architecture)
-4. [Key Features](#key-features)
-5. [Technical Implementation](#technical-implementation)
-6. [Demonstration Walkthrough](#demonstration-walkthrough)
-7. [Database Design](#database-design)
-8. [User Roles & Workflows](#user-roles--workflows)
-9. [Intelligent Matching Algorithm](#intelligent-matching-algorithm)
-10. [Notification System](#notification-system)
-11. [Mobile Responsiveness & PWA](#mobile-responsiveness--pwa)
-12. [Security & Compliance](#security--compliance)
-13. [Deployment Instructions](#deployment-instructions)
-14. [Future Enhancements](#future-enhancements)
+**[🌐 Live Demo](https://anulostandfound.free.nf/)** • **[📖 Documentation](#-features)** • **[⚙️ Setup Guide](#-installation--setup)**
 
 ---
 
-## System Overview
+## 📸 System Overview
 
-### What is the ANU Lost & Found System?
+![ANU Lost and Found System](https://raw.githubusercontent.com/your-repo-url/main/screenshot.png)
 
-The **ANU Lost & Found System** is a web-based platform that:
+The **Campus Lost & Found System** is a web-based platform that helps students and campus staff reunite lost items with their owners. It features intelligent automatic matching, real-time notifications, role-based workflows, and a mobile-friendly interface.
 
-- **Centralizes** all lost and found item reports in one accessible location
-- **Automates** the matching between lost and found items using intelligent algorithms
-- **Notifies** users in real-time when potential matches are found
-- **Streamlines** the claim verification process through role-based workflows
-- **Provides** comprehensive analytics and reporting for campus administration
+### ✨ Key Highlights
 
-### Key Statistics
-
-- **Response Time**: Automated matching occurs within seconds of item reporting
-- **Match Accuracy**: Uses 4-factor scoring algorithm (keyword, category, location, date)
-- **User Roles**: 3 distinct roles (Student, Security Officer, Administrator)
-- **Notification Types**: 6 automated notification categories
-- **Platform**: Fully responsive, PWA-capable, works offline
-
-### Target Users
-
-- **Students**: Report lost items, claim found items
-- **Security Officers**: Verify claims, manage item links, approve recoveries
-- **Administrators**: View analytics, manage users, oversee system operations
+- **⚡ Smart Matching**: AI-powered algorithm matches lost and found items automatically
+- **🔔 Real-Time Notifications**: Instant alerts when potential matches are found
+- **✅ Secure Verification**: Multi-stage claim approval by security staff
+- **📱 Mobile-Friendly**: Responsive design works on phones, tablets, and desktops
+- **🚀 Offline Support**: PWA capabilities for offline functionality
+- **👥 Role-Based Access**: Separate dashboards for students, security, and admins
 
 ---
 
-## Problem Statement
+## 📋 Table of Contents
 
-### Challenges in Traditional Lost & Found Systems
-
-**Before this system**, the ANU campus relied on:
-
-1. **Manual Processes**
-   - Students physically visiting the Lost & Found office
-   - Paper-based item logs
-   - Word-of-mouth matchmaking
-
-2. **Information Silos**
-   - No centralized database of lost/found items
-   - Items remain unmatched for extended periods
-   - Duplicate reports and lost records
-
-3. **Poor User Experience**
-   - No real-time notifications
-   - Difficult to track claim status
-   - Confusion about verification requirements
-   - Limited accessibility for off-campus users
-
-4. **Administrative Burden**
-   - Time-consuming manual verification
-   - No analytics or trends reporting
-   - Difficult to identify recurring issues
-
-### Impact
-
-- Low recovery rate for lost items
-- User frustration and poor satisfaction
-- Inefficient use of campus resources
-- Lack of data for process improvement
+- [Quick Start](#-quick-start)
+- [🧪 Test Accounts](#-test-accounts)
+- [Features](#-features)
+- [User Roles](#-user-roles)
+- [Installation & Setup](#-installation--setup)
+- [Usage Guide](#-usage-guide)
+- [Customization](#-customization)
+- [Technology Stack](#-technology-stack)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-## Solution Architecture
+## 🚀 Quick Start
 
-### System Design Overview
+### Try the Live Demo
+Visit **[https://anulostandfound.free.nf/](https://anulostandfound.free.nf/)** to see the system in action!
 
+### Local Installation (5 minutes)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/campus-lost-and-found.git
+cd campus-lost-and-found
+
+# 2. Set up XAMPP
+# - Place folder in htdocs/
+# - Start Apache and MySQL from XAMPP Control Panel
+
+# 3. Create database
+# - Open phpMyAdmin (http://localhost/phpmyadmin)
+# - Create new database: anu_lost_found
+# - Import migrations/database.sql
+
+# 4. Access the system
+# Open: http://localhost/campus-lost-and-found/
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     CLIENT LAYER (Frontend)                     │
-│  Bootstrap 5 UI │ Responsive Design │ PWA Mobile App │ Offline │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    APPLICATION LAYER (Backend)                  │
-│  PHP 7.4+ │ RESTful APIs │ Session Management │ Authentication  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     DATA LAYER (Database)                       │
-│  MySQL │ 6 Core Tables │ Normalized Schema │ Data Integrity    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Technology Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | HTML5, Bootstrap 5, JavaScript | Responsive UI, PWA |
-| **Backend** | PHP 7.4+, PDO | Server logic, API endpoints |
-| **Database** | MySQL 5.7+ | Data persistence |
-| **Additional** | Bootstrap Icons, Charts.js | UI enhancements |
-
-### Deployment Environment
-
-- **Server**: XAMPP (local) / Apache (production)
-- **Runtime**: PHP 7.4 or higher
-- **Database**: MySQL 5.7+
-- **Browser Support**: Chrome, Firefox, Safari, Edge (latest versions)
-- **Mobile**: iOS 12+, Android 6+
 
 ---
 
-## Key Features
+## 🧪 Test Accounts
 
-### 1. User Authentication & Authorization
+Use these credentials to explore all features. The system comes pre-configured with three test accounts:
 
-**Three-Tier Role System:**
+### Student Account
+- **Email**: `student@anu.ac.ke`
+- **Password**: `student123`
+- **Access**: Report items, search, claim found items, view profile
 
-| Role | Permissions | Use Cases |
-|------|-----------|-----------|
-| **Student** | Report items, Search, Claim items, View profile | Lost/found personal items |
-| **Security Officer** | Approve claims, Verify items, View reports | Campus security desk |
-| **Administrator** | Manage users, View analytics, System configuration | IT administration |
+### Security Officer Account
+- **Email**: `security@anu.ac.ke`
+- **Password**: `security123`
+- **Access**: Review claims, verify items, approve recoveries, view reports
 
-**Security Features:**
-- Session-based authentication
-- Password hashing (bcrypt recommended)
-- Role-based access control (RBAC)
-- CSRF protection
-- SQL injection prevention via prepared statements
+### Admin Account
+- **Email**: `admin@anu.ac.ke`
+- **Password**: `admin123`
+- **Access**: User management, analytics dashboard, system configuration
 
-### 2. Item Reporting
+**📝 Note**: Change these passwords immediately in production!
 
-**Report Types:**
-- **Lost Item**: "I lost my laptop yesterday in the library"
-- **Found Item**: "I found a blue backpack near the cafeteria"
+---
 
-**Required Information:**
-- Item category (Electronics, Documents, Clothing, Books, Personal Items, Others)
-- Title and description
-- Location (Campus building/area)
-- Date lost/found
-- Photo/image (optional but recommended)
-- Contact information (auto-filled from profile)
+## ⭐ Features
 
-**Key Benefits:**
-- Standardized information collection
-- Photo evidence for verification
-- Automatic geolocation suggestions
+### 🔓 Authentication & Roles
 
-### 3. Intelligent Automatic Matching
+| Role | Features |
+|------|----------|
+| **Student** | Report lost/found items, search database, claim items, view profile |
+| **Security Officer** | Review and verify claims, approve/reject recoveries, link items manually |
+| **Administrator** | Manage users, view analytics, system configuration, generate reports |
 
-**Revolutionary Feature: Smart Matching Algorithm**
+### 📝 Report Items
 
-The system automatically matches lost and found items using multiple criteria:
+Quickly report lost or found items with:
+- **Item details**: Category, title, description
+- **Location & date**: When and where it was lost/found
+- **Photo upload**: Include images for verification
+- **Contact info**: Auto-filled from your profile
 
-**Matching Criteria:**
-1. **Keyword Matching** (40 points max)
-   - Analyzes title and description for overlapping words
-   - Example: Lost "iPhone 12 Pro" matches Found "Apple phone"
+Supported categories: Electronics, Documents, Clothing, Books, Personal Items, Other
 
-2. **Category Matching** (30 points max)
-   - Exact category match: 30 points
-   - Similar categories: 20 points
-   - Example: Electronics category has high similarity with "Smartphones"
+### 🤖 Intelligent Automatic Matching
 
-3. **Location Proximity** (20 points max)
-   - Same location: 20 points
-   - Nearby campus areas: 10 points
-   - Example: "Library" and "Study Hall" considered proximate
+The system automatically matches lost and found items using a smart algorithm:
 
-4. **Date Proximity** (10 points max)
-   - Loss/found within 7 days: 10 points
-   - Within 30 days: 5 points
-   - Example: Item lost on Monday, found on Wednesday = match
+**Matching Criteria** (out of 100 points):
+- **Keywords** (40 pts): Title & description similarity
+- **Category** (30 pts): Item category match
+- **Location** (20 pts): Campus area proximity
+- **Date** (10 pts): Report date proximity
 
-**Matching Threshold**: 40+ out of 100 points triggers automatic match notification
+**Threshold**: 40+ points = automatic match notification sent!
 
-**Example Match Scenario:**
+**Example**:
 ```
-Lost Item: "Red Sony Headphone, lost at Library, May 15"
-Found Item: "Red headphones, found at Study Hall, May 16"
-
-Keyword Match:     25/40  (Sony, Red, Headphone)
-Category Match:    30/30  (Electronics = Electronics)
-Location Proximity: 10/20  (Library ≈ Study Hall nearby)
-Date Proximity:    10/10  (Within 1 day)
-─────────────────────────
-TOTAL SCORE:       75/100  → MATCH CREATED ✓
+Lost: "Red Sony Headphones, Library, May 15"
+Found: "Red headphones, Study Hall, May 16"
+Score: 75/100 ✓ MATCH CREATED!
 ```
 
-**Algorithm Implementation**: `/includes/notifications.php` → `calculateMatchScore()` function
+### 🔔 Real-Time Notifications
 
-### 4. Real-Time Notifications
+Get instant alerts for:
+- 🟢 **Matches**: Item match found
+- 🟡 **Claims**: Someone claimed your item
+- 🔵 **Verification**: Claim approved by security
+- 🟦 **Recovery**: Item ready for pickup
+- 🟪 **Admin Actions**: Manual item linking
+- ⚪ **System**: Important announcements
 
-**Six Notification Types:**
+### ✅ Claim Verification Process
 
-| Type | Color | Trigger | Action |
-|------|-------|---------|--------|
-| **Match** | Green | Automatic item match found | View search results |
-| **Claim** | Amber | Item claimed by user | Review claim request |
-| **Verification** | Blue | Claim approved by security | Item ready for pickup |
-| **Recovery** | Teal | Item marked as recovered | Celebrate recovery |
-| **Link** | Purple | Admin manually linked items | Review linked items |
-| **System** | Gray | General announcements | Read notification |
+The secure workflow ensures items go to the right owner:
 
-**Notification Features:**
-- Bell icon with unread count in header
-- Real-time updates via API
-- Mark individual or all as read
-- Pagination (10 per page)
-- Color-coded for quick identification
-- Timestamps (relative: "2 hours ago")
+1. You report a **lost item**
+2. Someone claims it with **evidence** (photo, description)
+3. **Security officer reviews** the claim
+4. Officer **verifies** you're the real owner
+5. Claim is **approved or rejected**
+6. If approved, you get **pickup notification**
+7. Collect your item! ✨
 
-### 5. Multi-Stage Claim Verification
+### 💬 Messaging System
 
-**Claim Workflow:**
-
-```
-1. User Reports Lost Item
-   ↓
-2. Item Listed in "Open" Status
-   ↓
-3. Another User Files Claim with Evidence
-   ↓
-4. Security Officer Reviews Claim
-   ↓
-5. Verify Item Ownership (Photo, Description Match)
-   ↓
-6. Approve or Reject Claim
-   ↓
-7. If Approved: Notify User → Item Ready for Pickup
-   ↓
-8. User Collects Item → Mark "Collected"
-```
-
-**Claim Requirements:**
-- Photo or video evidence
-- Detailed description of how they lost/own it
-- Any identifying marks or serial numbers
-- Mobile verification by security officer
-
-### 6. Messaging System with File Attachments
-
-**Features:**
-- Direct messaging between users and security staff
-- File attachment support (proof documents, photos)
-- Message history and threading
+- Direct messaging with security staff and other users
+- Attach photos and documents as proof
+- Message history for reference
 - Read/unread status tracking
-- Message synchronization for offline use
 
-### 7. Admin Dashboard & Analytics
+### 📊 Admin Dashboard
 
-**Admin Capabilities:**
-- View system statistics (total items, matches, claims)
-- Monitor claims and manage approvals
-- Link items manually if matching fails
-- User management (view, disable accounts)
-- Generate reports (PDF)
-- System diagnostics and cleanup utilities
-
-**Reports Available:**
-- Daily/Weekly/Monthly statistics
-- Match success rate
-- Claims approval rate
-- Most common lost categories
-- Peak loss times
-
-### 8. Mobile Responsiveness & PWA
-
-**Progressive Web App Features:**
-- **Offline Capability**: Browse cached items without internet
-- **Installable**: Add app to home screen
-- **Responsive**: Perfect display on phones (320px), tablets, desktops
-- **Touch-Optimized**: Large button sizes, mobile-friendly forms
-- **Service Worker**: Background synchronization of data
-
-**Mobile Optimization:**
-- 100% responsive Bootstrap 5 grid system
-- Enhanced CSS media queries for various screen sizes
-- Touch-friendly navigation (48px minimum touch targets)
-- Mobile-optimized forms and inputs
-- Keyboard-friendly interfaces
+Administrators can:
+- View system statistics and analytics
+- Manage user accounts
+- Review and approve claims
+- Link items manually if auto-matching fails
+- Generate reports in PDF format
 
 ---
 
-## Technical Implementation
+## 👥 User Roles
 
-### File Structure
+### Student
+- Browse lost and found items
+- Report lost items
+- Report found items
+- Claim found items belonging to you
+- Message security staff and other users
+- Track claim status in real-time
 
-```
-lost_and_found/
-├── auth/                          # Authentication
-│   ├── login.php                 # User login/register
-│   ├── login_admin.php           # Admin login (standalone)
-│   └── process_login.php         # Authentication handler
-├── actions/                       # API endpoints
-│   ├── claim_item.php            # Submit claim
-│   ├── approve_claim.php         # Security approves
-│   ├── process_report.php        # Handle new item report
-│   ├── link_items.php            # Manual linking
-│   └── [...other actions...]
-├── admin/                         # Admin panel
-│   ├── dashboard.php             # Admin overview
-│   ├── claims.php                # Manage claims
-│   ├── users.php                # User management
-│   ├── reports.php               # Analytics
-│   └── messaging.php             # Message management
-├── includes/                      # Shared code
-│   ├── db.php                    # Database connection
-│   ├── auth_check.php            # Login verification
-│   ├── functions.php             # Utility functions
-│   ├── notifications.php         # Matching & notifications
-│   ├── header.php                # Top navigation
-│   └── footer.php                # Footer & scripts
-├── assets/
-│   ├── css/style.css             # Responsive styling
-│   ├── js/app.js                 # Frontend logic
-│   └── images/                   # Logos, icons
-├── migrations/                    # Database setup
-│   ├── create_notifications_table.sql
-│   └── [...other migrations...]
-├── manifest.json                 # PWA manifest
-├── service-worker.js             # Offline support
-├── offline.html                  # Offline page
-├── *.php                         # Main pages (index, search, report, etc.)
-└── uploads/                      # User uploads
-```
+### Security Officer
+- Verify item claims with evidence
+- Approve or reject claim requests
+- Link items manually
+- View pending claims
+- Generate daily/monthly reports
 
-### Database Schema
+### Administrator
+- Full system access
+- User management
+- Analytics and insights
+- System settings
+- Batch operations and cleanup
 
-#### Core Tables:
+---
 
-**1. users** (Authentication & Authorization)
-```sql
-id (PK) | name | email | password_hash | role | is_active | created_at
+## ⚙️ Installation & Setup
+
+### Prerequisites
+- PHP 7.4 or higher
+- MySQL 5.7 or higher
+- Apache web server (or XAMPP)
+- Modern web browser
+
+### Step 1: Download & Setup Files
+
+```bash
+# Option A: Using Git
+git clone https://github.com/your-username/campus-lost-and-found.git
+cd campus-lost-and-found
+
+# Option B: Direct download
+# Download ZIP from GitHub and extract to your server
 ```
 
-**2. items** (Lost/Found Reports)
-```sql
-id (PK) | user_id (FK) | type | title | description | category 
-| location | image_url | status | created_at
+### Step 2: Configure Database
+
+**Option A: Using XAMPP phpMyAdmin**
+
+1. Start XAMPP (Apache + MySQL)
+2. Open http://localhost/phpmyadmin
+3. Click "New" → Create database `anu_lost_found`
+4. Go to "Import" tab
+5. Select `migrations/database.sql`
+6. Click "Go"
+
+**Option B: Using command line**
+
+```bash
+mysql -u root -p < migrations/database.sql
 ```
 
-**3. claims** (Claim Submissions)
-```sql
-id (PK) | item_id (FK) | user_id (FK) | evidence_path | description 
-| verified_by | status | created_at
-```
+### Step 3: Configure Database Connection
 
-**4. messages** (User Messaging)
-```sql
-id (PK) | sender_id (FK) | recipient_id (FK) | message 
-| attachment_path | is_read | created_at
-```
-
-**5. notifications** (System Notifications)
-```sql
-id (PK) | user_id (FK) | type | title | message | item_id (FK) 
-| action_url | is_read | created_at
-```
-
-**6. item_matches** (Match Tracking)
-```sql
-id (PK) | lost_item_id (FK) | found_item_id (FK) | score 
-| matched_at
-```
-
-### Key Code Components
-
-#### 1. Automatic Matching Function
-
-**Location**: `/includes/notifications.php`
+Edit `includes/db.php` with your database credentials:
 
 ```php
-function autoMatchItems($itemId) {
-    // Fetch the newly reported item
-    $newItem = getItemById($itemId);
-    
-    // Find potential matches from opposite type
-    $oppositeType = ($newItem['type'] === 'lost') ? 'found' : 'lost';
-    $candidates = getItemsByType($oppositeType);
-    
-    foreach ($candidates as $candidate) {
-        $score = calculateMatchScore($newItem, $candidate);
-        
-        if ($score >= 40) {  // Threshold
-            // Create match record
-            createItemMatch($newItem['id'], $candidate['id'], $score);
-            
-            // Send notifications to both users
-            sendMatchNotification($newItem['user_id'], $candidate);
-            sendMatchNotification($candidate['user_id'], $newItem);
-        }
-    }
-}
+<?php
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'anu_lost_found');
+define('DB_USER', 'root');
+define('DB_PASS', '');  // Your MySQL password
+define('BASE_URL', '/campus-lost-and-found');  // Adjust path as needed
+?>
+```
 
-function calculateMatchScore($item1, $item2) {
-    $score = 0;
-    
-    // Keyword matching (40 pts max)
-    $keywordScore = calculateKeywordSimilarity($item1, $item2);
+### Step 4: Access the Application
+
+Open your browser and navigate to:
+```
+http://localhost/campus-lost-and-found/
+```
+
+Login with any test account (see [Test Accounts](#-test-accounts))
+
+---
+
+## 📖 Usage Guide
+
+### For Students
+
+#### Finding Lost Items
+1. Click **Search** in the navigation
+2. Browse available found items
+3. Filter by **category**, **location**, or **date**
+4. Click an item to see full details and photos
+5. Click **Claim Item** if it's yours
+
+#### Reporting a Lost Item
+1. Click **Report Item** 
+2. Select **"I Lost This"**
+3. Fill in details: category, title, description
+4. Add **photo** if possible (helps verification)
+5. Select location and date
+6. Click **Submit Report**
+7. System automatically searches for matches
+8. Get notified when potential matches are found
+
+#### Tracking Your Claims
+1. Go to **Dashboard**
+2. View your **Item Claims** section
+3. See status: Pending → Approved → Ready for Pickup
+4. Check **Notifications** for updates
+
+### For Security Officers
+
+#### Reviewing Claims
+1. Go to **Security Dashboard** (requires login)
+2. See **Pending Claims** section
+3. Click claim to review evidence
+4. Compare with original item photo/description
+5. Click **Approve** or **Reject**
+6. Add note for the claimant
+
+#### Manual Item Linking
+1. Go to **Manage Items**
+2. Search for items that should match
+3. Select both items
+4. Click **Link Items**
+5. System creates the match notification
+
+### For Administrators
+
+#### Managing Users
+1. Go to **Admin Panel**
+2. Select **Users**
+3. View all users and their roles
+4. Disable accounts if needed
+5. Search and filter users
+
+#### Viewing Analytics
+1. Go to **Admin Dashboard**
+2. See key metrics:
+   - Total items reported
+   - Successful matches
+   - Claim approval rate
+   - Most common lost items
+
+---
+
+## 🎨 Customization
+
+### Rename Your Institution
+
+To adapt this system for your university or organization:
+
+#### 1. Update Site Name
+Edit `includes/header.php`:
+```php
+// Change:
+<title>ANU Lost & Found</title>
+// To:
+<title>Your University Lost & Found</title>
+```
+
+#### 2. Update Logo
+Replace `assets/images/anu-logo.png` with your university logo
+
+#### 3. Update Contact Information
+Edit `includes/footer.php`:
+```php
+<p>your-email@youruni.edu</p>
+<p>Your University Address</p>
+<p>Phone: +254 XXX XXXXXX</p>
+```
+
+#### 4. Update Color Scheme
+Edit `assets/css/style.css`:
+```css
+:root {
+  --primary-color: #ed1c24;      /* Change to your color */
+  --secondary-color: #f9a825;    /* Change to your color */
+}
+```
+
+#### 5. Update Database Credentials
+Edit `includes/db.php` with your database details
+
+#### 6. Customize Categories
+Edit the `items` table in your database or modify the form options in PHP files to add/remove item categories
+
+---
+
+| **Frontend** | HTML5, Bootstrap 5, CSS3, JavaScript |
+| **Backend** | PHP 7.4+, PDO (Database Abstraction) |
+| **Database** | MySQL 5.7+ with InnoDB |
+| **UI Library** | Bootstrap 5, Bootstrap Icons |
+| **Charts** | Charts.js for analytics |
+| **PWA** | Service Workers for offline support |
+| **API** | RESTful AJAX endpoints |
+
+---
+
+## 📁 Project Structure
+
+```
+campus-lost-and-found/
+├── admin/                          # Admin dashboard pages
+│   ├── claims.php                 # Manage claims
+│   ├── dashboard.php              # Analytics & stats
+│   ├── managemedia.php            # File management
+│   ├── messaging.php              # Admin messaging
+│   ├── reports.php                # Generate reports
+│   ├── security_dashboard.php     # Security officer tools
+│   └── users.php                  # User management
+├── auth/                           # Authentication
+│   ├── login.php                  # Student login
+│   ├── login_admin.php            # Admin login
+│   ├── process_login.php          # Login handler
+│   └── register.php               # User registration
+├── actions/                        # API endpoints & handlers
+│   ├── approve_claim.php          # Approve claim request
+│   ├── change_item_status.php     # Update item status
+│   ├── claim_item.php             # Submit claim
+│   ├── generate_student_id.php    # Create student ID
+│   ├── get_matching_items.php     # Find matches
+│   ├── process_report.php         # Process new report
+│   └── [other endpoints...]
+├── includes/                       # Shared components
+│   ├── db.php                     # Database connection
+│   ├── header.php                 # Navigation & layout
+│   ├── footer.php                 # Footer component
+│   ├── auth_check.php             # Authentication checks
+│   ├── functions.php              # Utility functions
+│   └── notifications.php          # Matching algorithm
+├── assets/                         # Frontend resources
+│   ├── css/
+│   │   └── style.css              # Main stylesheet
+│   ├── js/
+│   │   └── app.js                 # Frontend logic
+│   ├── images/                    # Logos, icons
+│   ├── fonts/                     # Custom fonts
+│   └── video/                     # Background videos
+├── migrations/
+│   └── database.sql               # Database schema
+├── uploads/                        # User uploads (claims, items)
+│   ├── items/
+│   ├── claims/
+│   └── messages/
+├── README.md                       # This file
+├── manifest.json                   # PWA manifest
+├── service-worker.js              # Offline support
+├── index.php                       # Homepage
+├── dashboard.php                   # Student dashboard
+├── search.php                      # Search interface
+├── report.php                      # Report form
+├── claims.php                      # Claims tracking
+├── messages.php                    # Messaging
+├── notifications.php               # Notification center
+├── profile.php                     # User profile
+└── logout.php                      # Session logout
+```
+
+---
+
+## 🔒 Security Features
+
+- ✅ **Session-based Authentication**: Secure user login
+- ✅ **Password Hashing**: bcrypt for password protection
+- ✅ **Role-Based Access Control**: Restrict features by user role
+- ✅ **SQL Injection Prevention**: PDO prepared statements
+- ✅ **CSRF Protection**: Session tokens
+- ✅ **File Upload Validation**: Type and size checks
+- ✅ **Input Sanitization**: Strip and escape user inputs
+
+---
+
+## 🚀 Deployment Options
+
+### Option 1: Shared Hosting (cPanel)
+1. Upload files via FTP
+2. Create MySQL database in cPanel
+3. Import database schema
+4. Update `db.php` with hosting credentials
+
+### Option 2: VPS/Dedicated Server
+1. Install PHP 7.4+, MySQL 5.7+, Apache
+2. Clone repository
+3. Set permissions: `chmod 755 uploads/`
+4. Configure virtual host
+5. Enable SSL certificate
+
+### Option 3: Docker (Production)
+```bash
+docker-compose up -d
+# Application available at http://localhost
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Database Connection Error
+- **Issue**: "No such file or directory"
+- **Solution**: 
+  1. Verify MySQL is running
+  2. Check credentials in `includes/db.php`
+  3. Ensure database exists
+
+### Images Not Loading
+- **Issue**: Broken image paths
+- **Solution**:
+  1. Check `BASE_URL` in `includes/db.php`
+  2. Verify images exist in `assets/images/`
+  3. Check file permissions: `chmod 644 uploads/*`
+
+### Session Issues
+- **Issue**: Logged out unexpectedly
+- **Solution**:
+  1. Check session timeout in `includes/auth_check.php`
+  2. Clear browser cookies
+  3. Verify PHP sessions folder exists: `/tmp/`
+
+### Matching Not Working
+- **Issue**: Auto-matching not triggered
+- **Solution**:
+  1. Check `includes/notifications.php` for algorithm
+  2. Verify score threshold settings
+  3. Test with sample items
+
+---
+
+## 💡 Tips & Best Practices
+
+### For Administrators
+- **Set up email notifications** (optional): Configure SMTP in PHP
+- **Regular backups**: Database backups weekly
+- **Monitor logs**: Check for security issues
+- **Clean old data**: Archive collected items after 90 days
+- **Update passwords**: Change test account credentials
+
+### For Institution Deployment
+- **Customize branding**: Update logos and colors
+- **Localize content**: Translate to local language
+- **Campus integration**: Link with student information system
+- **Training**: Create guides for staff and students
+- **Support**: Set up help desk for issues
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to help:
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Commit** your changes: `git commit -m 'Add amazing feature'`
+4. **Push** to the branch: `git push origin feature/amazing-feature`
+5. **Open** a Pull Request
+
+### Areas for Contribution
+- 🐛 Bug fixes and improvements
+- 🎨 UI/UX enhancements
+- 📱 Mobile app version
+- 🌍 Language translations
+- 📚 Documentation improvements
+- ⚡ Performance optimizations
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file for details.
+
+You are free to:
+- ✅ Use for personal and commercial projects
+- ✅ Modify and distribute
+- ✅ Use in private and open-source projects
+
+Just include the original license and copyright notice.
+
+---
+
+## 📞 Support & Contact
+
+- **Live Demo**: https://anulostandfound.free.nf/
+- **Issues**: [GitHub Issues](https://github.com/your-username/campus-lost-and-found/issues)
+- **Email**: reports@anu.ac.ke
+- **Documentation**: See [SETUP.md](SETUP.md) for detailed setup guide
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [Bootstrap 5](https://getbootstrap.com/)
+- Icons from [Bootstrap Icons](https://icons.getbootstrap.com/)
+- Charts powered by [Charts.js](https://www.chartjs.org/)
+- Community feedback and contributions
+
+---
+
+**Made with ❤️ for the campus community**
+
+*Last Updated: April 2026*
     
     // Category matching (30 pts max)
     $categoryScore = comparecategories($item1, $item2);
