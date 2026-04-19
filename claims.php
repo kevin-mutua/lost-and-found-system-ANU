@@ -78,10 +78,10 @@ try {
                     <?php else: ?>
                         <div class="row">
                             <?php foreach ($pending_claims as $claim): ?>
-                                <div class="col-md-6 mb-3">
-                                    <div class="card h-100 border">
+                                <div class="col-lg-4 mb-3">
+                                    <div class="card h-100 border" style="max-height: 200px;">
                                         <div class="row g-0 h-100">
-                                            <div class="col-md-4">
+                                            <div class="col-3">
                                                 <?php if ($claim['image_path']): ?>
                                                     <img src="<?php echo htmlspecialchars(BASE_URL . '/' . $claim['image_path']); ?>" 
                                                          alt="<?php echo htmlspecialchars($claim['title']); ?>" 
@@ -92,23 +92,20 @@ try {
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="col-md-8">
-                                                <div class="card-body">
-                                                    <h6 class="card-title"><?php echo htmlspecialchars($claim['title']); ?></h6>
-                                                    <small class="text-muted d-block">
-                                                        <i class="bi bi-tag me-1"></i><?php echo htmlspecialchars($claim['category']); ?>
+                                            <div class="col-9">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title mb-1" style="font-size: 0.9rem;"><?php echo htmlspecialchars($claim['title']); ?></h6>
+                                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-tag"></i> <?php echo htmlspecialchars($claim['category']); ?>
                                                     </small>
-                                                    <small class="text-muted d-block">
-                                                        <i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($claim['location']); ?>
+                                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($claim['location']); ?>
                                                     </small>
-                                                    <small class="text-muted d-block mt-2">
-                                                        <i class="bi bi-calendar me-1"></i><?php echo date('M j, Y', strtotime($claim['created_at'])); ?>
-                                                    </small>
-                                                    <p class="text-warning small mt-2 mb-2">
-                                                        <i class="bi bi-clock me-1"></i>Pending Review
+                                                    <p class="text-warning small mb-1" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-clock"></i> Pending
                                                     </p>
-                                                    <button type="button" class="btn btn-sm btn-primary" onclick="viewClaimDetails(<?php echo $claim['id']; ?>)">
-                                                        <i class="bi bi-eye me-1"></i>View Details
+                                                    <button type="button" class="btn btn-xs btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="viewClaimDetails(<?php echo $claim['id']; ?>)">
+                                                        View Details
                                                     </button>
                                                 </div>
                                             </div>
@@ -144,10 +141,10 @@ try {
                         </div>
                         <div class="row">
                             <?php foreach ($approved_claims as $claim): ?>
-                                <div class="col-md-6 mb-3">
-                                    <div class="card h-100 border border-success">
+                                <div class="col-lg-4 mb-3">
+                                    <div class="card h-100 border border-success" style="max-height: 200px;">
                                         <div class="row g-0 h-100">
-                                            <div class="col-md-4">
+                                            <div class="col-3">
                                                 <?php if ($claim['image_path']): ?>
                                                     <img src="<?php echo htmlspecialchars(BASE_URL . '/' . $claim['image_path']); ?>" 
                                                          alt="<?php echo htmlspecialchars($claim['title']); ?>" 
@@ -158,23 +155,20 @@ try {
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="col-md-8">
-                                                <div class="card-body">
-                                                    <h6 class="card-title"><?php echo htmlspecialchars($claim['title']); ?></h6>
-                                                    <small class="text-muted d-block">
-                                                        <i class="bi bi-tag me-1"></i><?php echo htmlspecialchars($claim['category']); ?>
+                                            <div class="col-9">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title mb-1" style="font-size: 0.9rem;"><?php echo htmlspecialchars($claim['title']); ?></h6>
+                                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-tag"></i> <?php echo htmlspecialchars($claim['category']); ?>
                                                     </small>
-                                                    <small class="text-muted d-block">
-                                                        <i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($claim['location']); ?>
+                                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($claim['location']); ?>
                                                     </small>
-                                                    <small class="text-muted d-block mt-2">
-                                                        <i class="bi bi-calendar me-1"></i><?php echo date('M j, Y', strtotime($claim['created_at'])); ?>
-                                                    </small>
-                                                    <p class="text-success small mt-2 mb-2">
-                                                        <i class="bi bi-check-circle me-1"></i>Approved - Ready for Collection
+                                                    <p class="text-success small mb-1" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-check-circle"></i> Approved
                                                     </p>
-                                                    <button type="button" class="btn btn-sm btn-success" onclick="viewClaimDetails(<?php echo $claim['id']; ?>)">
-                                                        <i class="bi bi-eye me-1"></i>View Details
+                                                    <button type="button" class="btn btn-xs btn-success" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="viewClaimDetails(<?php echo $claim['id']; ?>)">
+                                                        View Details
                                                     </button>
                                                 </div>
                                             </div>
@@ -205,10 +199,10 @@ try {
                     <?php else: ?>
                         <div class="row">
                             <?php foreach ($rejected_claims as $claim): ?>
-                                <div class="col-md-6 mb-3">
-                                    <div class="card h-100 border border-danger">
+                                <div class="col-lg-4 mb-3">
+                                    <div class="card h-100 border border-danger" style="max-height: 200px;">
                                         <div class="row g-0 h-100">
-                                            <div class="col-md-4">
+                                            <div class="col-3">
                                                 <?php if ($claim['image_path']): ?>
                                                     <img src="<?php echo htmlspecialchars(BASE_URL . '/' . $claim['image_path']); ?>" 
                                                          alt="<?php echo htmlspecialchars($claim['title']); ?>" 
@@ -219,25 +213,21 @@ try {
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="col-md-8">
-                                                <div class="card-body">
-                                                    <h6 class="card-title"><?php echo htmlspecialchars($claim['title']); ?></h6>
-                                                    <small class="text-muted d-block">
-                                                        <i class="bi bi-tag me-1"></i><?php echo htmlspecialchars($claim['category']); ?>
+                                            <div class="col-9">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title mb-1" style="font-size: 0.9rem;"><?php echo htmlspecialchars($claim['title']); ?></h6>
+                                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-tag"></i> <?php echo htmlspecialchars($claim['category']); ?>
                                                     </small>
-                                                    <small class="text-muted d-block">
-                                                        <i class="bi bi-geo-alt me-1"></i><?php echo htmlspecialchars($claim['location']); ?>
+                                                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($claim['location']); ?>
                                                     </small>
-                                                    <small class="text-muted d-block mt-2">
-                                                        <i class="bi bi-calendar me-1"></i><?php echo date('M j, Y', strtotime($claim['created_at'])); ?>
-                                                    </small>
-                                                    <p class="text-danger small mt-2 mb-2">
-                                                        <i class="bi bi-x-circle me-1"></i>Rejected
+                                                    <p class="text-danger small mb-1" style="font-size: 0.75rem;">
+                                                        <i class="bi bi-x-circle"></i> Rejected
                                                     </p>
-                                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="viewClaimDetails(<?php echo $claim['id']; ?>)">
-                                                        <i class="bi bi-eye me-1"></i>View Details
+                                                    <button type="button" class="btn btn-xs btn-outline-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="viewClaimDetails(<?php echo $claim['id']; ?>)">
+                                                        View Details
                                                     </button>
-                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -273,8 +263,15 @@ try {
     
     function viewClaimDetails(claimId) {
         fetch('<?php echo BASE_URL; ?>/actions/get_claim_details.php?claim_id=' + claimId)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
             .then(data => {
+                if (!data.success) {
+                    Swal.fire('Error', data.error || 'Failed to load claim details', 'error');
+                    return;
+                }
                 if (data.success) {
                     const claim = data.claim;
                     const claimDate = new Date(claim.created_at).toLocaleDateString();

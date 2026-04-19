@@ -21,6 +21,22 @@ if (($_SESSION['user_role'] ?? null) !== 'admin') {
 require_once '../includes/functions.php';
 require_once '../includes/admin_functions.php';
 
+// Auto-initialize all existing users to is_active = 1 if column was just added
+try {
+    $stmt = $pdo->prepare("UPDATE users SET is_active = 1 WHERE is_active IS NULL");
+    $stmt->execute();
+} catch(Exception $e) {
+    // Column might not exist yet, ignore
+}
+
+// Add course column if it doesn't exist (migration)
+try {
+    $stmt = $pdo->prepare("ALTER TABLE users ADD COLUMN course VARCHAR(255) DEFAULT 'N/A'");
+    $stmt->execute();
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
 // Handle user role update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'update_role') {
@@ -54,12 +70,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
         header('Location: ' . BASE_URL . '/admin/users.php');
         exit();
+    } elseif ($_POST['action'] === 'delete_user') {
+        $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        
+        if ($user_id > 0 && $user_id != $_SESSION['user_id']) {
+            try {
+                $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+                if ($stmt->execute([$user_id])) {
+                    $_SESSION['success'] = 'User deleted successfully!';
+                } else {
+                    $_SESSION['error'] = 'Failed to delete user.';
+                }
+            } catch(Exception $e) {
+                $_SESSION['error'] = 'Error deleting user: ' . $e->getMessage();
+            }
+        }
+        header('Location: ' . BASE_URL . '/admin/users.php');
+        exit();
+    } elseif ($_POST['action'] === 'update_course') {
+        $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $course = isset($_POST['course']) ? trim($_POST['course']) : '';
+        
+        if ($user_id > 0 && !empty($course)) {
+            $stmt = $pdo->prepare("UPDATE users SET course = ? WHERE id = ?");
+            if ($stmt->execute([$course, $user_id])) {
+                $_SESSION['success'] = 'Course updated successfully!';
+            } else {
+                $_SESSION['error'] = 'Failed to update course.';
+            }
+        }
+        header('Location: ' . BASE_URL . '/admin/users.php');
+        exit();
     }
 }
 
 // Get all users
 $stmt = $pdo->prepare("
-    SELECT id, registration_id, name, email, phone, role, is_active, created_at 
+    SELECT id, registration_id, name, email, phone, role, is_active, course, created_at 
     FROM users 
     ORDER BY created_at DESC
 ");
@@ -148,14 +195,13 @@ require_once '../includes/header.php';
                 <table class="table table-hover mb-0">
                     <thead style="background-color: #f8f9fa; border-bottom: 2px solid #ed1c24;">
                         <tr>
-                            <th class="p-3">Name</th>
-                            <th class="p-3" style="font-size: 0.9rem;">Registration ID</th>
-                            <th class="p-3">Email</th>
+                            <th class="p-3">User Info</th>
                             <th class="p-3">Phone</th>
-                            <th class="p-3">Role</th>
+                            <th class="p-3">Course</th>
                             <th class="p-3">Joined</th>
                             <th class="p-3">Status</th>
                             <th class="p-3">Actions</th>
+                            <th class="p-3 text-center" style="width: 50px;">Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -163,14 +209,82 @@ require_once '../includes/header.php';
                             <?php foreach ($users as $user): ?>
                                 <tr>
                                     <td class="p-3" style="font-weight: 600;">
-                                        <?php echo htmlspecialchars($user['name']); ?>
-                                        <?php if ($user['id'] === $_SESSION['user_id']): ?>
-                                            <span class="badge bg-secondary">You</span>
+                                        <div style="font-size: 1rem; margin-bottom: 5px;">
+                                            <?php echo htmlspecialchars($user['name']); ?>
+                                            <?php if ($user['id'] === $_SESSION['user_id']): ?>
+                                                <span class="badge bg-secondary">You</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: #ed1c24; margin-bottom: 3px;">
+                                            <strong><?php echo htmlspecialchars($user['registration_id'] ?? 'N/A'); ?></strong>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 3px;">
+                                            <?php echo htmlspecialchars($user['email']); ?>
+                                        </div>
+                                        <div style="font-size: 0.8rem;">
+                                            <span class="badge bg-<?php 
+                                                echo $user['role'] === 'admin' ? 'danger' : 
+                                                     ($user['role'] === 'security' ? 'warning' : 'info'); 
+                                            ?>">
+                                                <?php echo ucfirst($user['role']); ?>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-muted small"><?php echo htmlspecialchars($user['phone'] ?? 'N/A'); ?></td>
+                                    <td class="p-3">
+                                        <?php if ($user['role'] === 'student'): ?>
+                                        <form method="POST" style="display: inline;">
+                                            <input type="hidden" name="action" value="update_course">
+                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                            <select name="course" class="form-select form-select-sm" style="width: 140px; display: inline-block; font-size: 0.85rem;" onchange="this.form.submit();">
+                                                <option value="">Select</option>
+                                                <!-- School of Law -->
+                                                <optgroup label="Law">
+                                                    <option value="Bachelor of Laws (LLB)" <?php echo ($user['course'] === 'Bachelor of Laws (LLB)') ? 'selected' : ''; ?>>LLB</option>
+                                                    <option value="Bachelor of Arts in Criminal Justice Security Studies" <?php echo ($user['course'] === 'Bachelor of Arts in Criminal Justice Security Studies') ? 'selected' : ''; ?>>Criminal Justice</option>
+                                                </optgroup>
+                                                <!-- School of Business -->
+                                                <optgroup label="Business">
+                                                    <option value="PhD in Business Administration and Management" <?php echo ($user['course'] === 'PhD in Business Administration and Management') ? 'selected' : ''; ?>>PhD Business</option>
+                                                    <option value="Master of Business Administration (MBA)" <?php echo ($user['course'] === 'Master of Business Administration (MBA)') ? 'selected' : ''; ?>>MBA</option>
+                                                    <option value="Bachelor of Commerce (Accounting)" <?php echo ($user['course'] === 'Bachelor of Commerce (Accounting)') ? 'selected' : ''; ?>>B.Com Accounting</option>
+                                                    <option value="Bachelor of Commerce (Banking and Finance)" <?php echo ($user['course'] === 'Bachelor of Commerce (Banking and Finance)') ? 'selected' : ''; ?>>B.Com Finance</option>
+                                                    <option value="Bachelor of Commerce (Marketing Management)" <?php echo ($user['course'] === 'Bachelor of Commerce (Marketing Management)') ? 'selected' : ''; ?>>B.Com Marketing</option>
+                                                    <option value="Bachelor of Science in International Business Management" <?php echo ($user['course'] === 'Bachelor of Science in International Business Management') ? 'selected' : ''; ?>>Int'l Business</option>
+                                                    <option value="Bachelor of Human Resource Management" <?php echo ($user['course'] === 'Bachelor of Human Resource Management') ? 'selected' : ''; ?>>HRM</option>
+                                                    <option value="Certificate in Business Management" <?php echo ($user['course'] === 'Certificate in Business Management') ? 'selected' : ''; ?>>Cert Business</option>
+                                                    <option value="Certified Procurement and Supply Professional of Kenya (CPSP-K)" <?php echo ($user['course'] === 'Certified Procurement and Supply Professional of Kenya (CPSP-K)') ? 'selected' : ''; ?>>CPSP-K</option>
+                                                </optgroup>
+                                                <!-- School of Science and Technology -->
+                                                <optgroup label="Science & Tech">
+                                                    <option value="Master of Science in Applied Information Technology (MSc. AIT)" <?php echo ($user['course'] === 'Master of Science in Applied Information Technology (MSc. AIT)') ? 'selected' : ''; ?>>MSc AIT</option>
+                                                    <option value="Master of Science in Environmental Resource Management (MSc. ERM)" <?php echo ($user['course'] === 'Master of Science in Environmental Resource Management (MSc. ERM)') ? 'selected' : ''; ?>>MSc ERM</option>
+                                                    <option value="Bachelor of Science in Computer Science" <?php echo ($user['course'] === 'Bachelor of Science in Computer Science') ? 'selected' : ''; ?>>BSc CS</option>
+                                                    <option value="Bachelor of Business and Information Technology" <?php echo ($user['course'] === 'Bachelor of Business and Information Technology') ? 'selected' : ''; ?>>BBIT</option>
+                                                    <option value="Bachelor of Science in Procurement and Supply Chain Management" <?php echo ($user['course'] === 'Bachelor of Science in Procurement and Supply Chain Management') ? 'selected' : ''; ?>>Supply Chain</option>
+                                                    <option value="Bachelor of Science in Environmental and Natural Resource Management" <?php echo ($user['course'] === 'Bachelor of Science in Environmental and Natural Resource Management') ? 'selected' : ''; ?>>Env Management</option>
+                                                    <option value="Diploma in Information Technology" <?php echo ($user['course'] === 'Diploma in Information Technology') ? 'selected' : ''; ?>>Dip IT</option>
+                                                    <option value="Diploma in Mobile Computing" <?php echo ($user['course'] === 'Diploma in Mobile Computing') ? 'selected' : ''; ?>>Dip Mobile</option>
+                                                    <option value="International Advanced Diploma in Computer Studies (IADCS)" <?php echo ($user['course'] === 'International Advanced Diploma in Computer Studies (IADCS)') ? 'selected' : ''; ?>>IADCS</option>
+                                                </optgroup>
+                                                <!-- School of Humanities and Social Sciences -->
+                                                <optgroup label="Humanities">
+                                                    <option value="Bachelor of Arts in Peace and Conflict Studies" <?php echo ($user['course'] === 'Bachelor of Arts in Peace and Conflict Studies') ? 'selected' : ''; ?>>Peace Studies</option>
+                                                    <option value="Bachelor of Mass Communication (Electronic)" <?php echo ($user['course'] === 'Bachelor of Mass Communication (Electronic)') ? 'selected' : ''; ?>>Mass Comm (E)</option>
+                                                    <option value="Bachelor of Mass Communication (Print Media)" <?php echo ($user['course'] === 'Bachelor of Mass Communication (Print Media)') ? 'selected' : ''; ?>>Mass Comm (P)</option>
+                                                </optgroup>
+                                                <!-- Other Programs -->
+                                                <optgroup label="Other">
+                                                    <option value="Master of Divinity" <?php echo ($user['course'] === 'Master of Divinity') ? 'selected' : ''; ?>>M.Div</option>
+                                                    <option value="Bachelor of Arts in Theology" <?php echo ($user['course'] === 'Bachelor of Arts in Theology') ? 'selected' : ''; ?>>Theology</option>
+                                                    <option value="Bachelor of Arts in Education" <?php echo ($user['course'] === 'Bachelor of Arts in Education') ? 'selected' : ''; ?>>Education</option>
+                                                </optgroup>
+                                            </select>
+                                        </form>
+                                        <?php else: ?>
+                                        <span class="text-muted small">N/A</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="p-3" style="font-weight: 600; color: #ed1c24;"><?php echo htmlspecialchars($user['registration_id'] ?? 'N/A'); ?></td>
-                                    <td class="p-3 text-muted small"><?php echo htmlspecialchars($user['email']); ?></td>
-                                    <td class="p-3 text-muted small"><?php echo htmlspecialchars($user['phone'] ?? 'N/A'); ?></td>
                                     <td class="p-3">
                                         <span class="badge bg-<?php 
                                             echo $user['role'] === 'admin' ? 'danger' : 
@@ -188,23 +302,12 @@ require_once '../includes/header.php';
                                     <td class="p-3">
                                         <?php if ($user['id'] !== $_SESSION['user_id']): ?>
                                             <!-- Message Button -->
-                                            <button type="button" class="btn btn-sm btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#messageModal" onclick="prepareMessage(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['name'], ENT_QUOTES); ?>')">
-                                                <i class="bi bi-chat-left-text"></i> Message
+                                            <button type="button" class="btn btn-sm btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#messageModal" onclick="prepareMessage(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['name'], ENT_QUOTES); ?>')">
+                                                <i class="bi bi-chat-left-text"></i> Msg
                                             </button>
-                                            <br>
-                                            <!-- Role Dropdown -->
-                                            <form method="POST" style="display: inline; margin-right: 5px;">
-                                                <input type="hidden" name="action" value="update_role">
-                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                                <select name="role" class="form-select form-select-sm" style="width: 100px; display: inline-block;" onchange="this.form.submit();">
-                                                    <option value="student" <?php echo $user['role'] === 'student' ? 'selected' : ''; ?>>Student</option>
-                                                    <option value="security" <?php echo $user['role'] === 'security' ? 'selected' : ''; ?>>Security</option>
-                                                    <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                                </select>
-                                            </form>
 
                                             <!-- Toggle Status Button -->
-                                            <form method="POST" style="display: inline;">
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to <?php echo $user['is_active'] ? 'deactivate' : 'activate'; ?> this user?');">
                                                 <input type="hidden" name="action" value="toggle_status">
                                                 <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-<?php echo $user['is_active'] ? 'danger' : 'success'; ?>" 
@@ -216,11 +319,22 @@ require_once '../includes/header.php';
                                             <span class="text-muted small">No actions</span>
                                         <?php endif; ?>
                                     </td>
+                                    <td class="p-3 text-center">
+                                        <?php if ($user['id'] !== $_SESSION['user_id']): ?>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                <input type="hidden" name="action" value="delete_user">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete user">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="8" class="text-center p-4 text-muted">
+                                <td colspan="7" class="text-center p-4 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No users found.
                                 </td>
@@ -241,7 +355,6 @@ require_once '../includes/header.php';
                     <li><strong>Students:</strong> Regular users who can report lost items and claim found items</li>
                     <li><strong>Security:</strong> Staff members who can moderate reports and assist in item recovery</li>
                     <li><strong>Admin:</strong> Full system access including user management, reports, and all features</li>
-                    <li>You can change user roles using the dropdown menu and activate/deactivate accounts as needed</li>
                 </ul>
             </div>
         </div>

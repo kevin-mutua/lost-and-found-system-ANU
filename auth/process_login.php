@@ -45,9 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: ' . BASE_URL . '/index.php');
                     exit();
                 } else {
-                    // Insert new user with default 'student' role
-                    $stmt = $pdo->prepare("INSERT INTO users (registration_id, name, email, password, role) 
-                                          VALUES (?, ?, ?, ?, 'student')");
+                    // Insert new user with default 'student' role and is_active = 1
+                    $stmt = $pdo->prepare("INSERT INTO users (registration_id, name, email, password, role, is_active) 
+                                          VALUES (?, ?, ?, ?, 'student', 1)");
                     $stmt->execute([$registration_id, $name, $email, password_hash($password, PASSWORD_DEFAULT)]);
 
                     $_SESSION['login_error'] = 'Registration successful! Please login with your credentials.';
@@ -73,6 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password'])) {
+                // Check if user is deactivated
+                if ($user['is_active'] == 0) {
+                    $_SESSION['login_error'] = 'Your account has been deactivated. Contact admin.';
+                    header('Location: ' . BASE_URL . '/index.php');
+                    exit();
+                }
+                
                 // Set session variables
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];

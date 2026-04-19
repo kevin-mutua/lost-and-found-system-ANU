@@ -1,0 +1,1 @@
+<?php echo "Server is reading this folder"; ?>

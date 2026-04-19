@@ -18,6 +18,21 @@ if (($_SESSION['user_role'] ?? null) === 'admin') {
     exit();
 }
 
+// Add course column if it doesn't exist (migration)
+try {
+    $stmt = $pdo->prepare("ALTER TABLE users ADD COLUMN course VARCHAR(255) DEFAULT 'N/A'");
+    $stmt->execute();
+} catch(Exception $e) {
+    // Column already exists, ignore
+}
+
+// Get current user's course and created_at
+$stmt = $pdo->prepare("SELECT course, created_at FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$userData = $stmt->fetch();
+$userCourse = $userData['course'] ?? 'N/A';
+$userCreatedAt = $userData['created_at'] ?? date('Y-m-d H:i:s');
+
 // Get user stats
 try {
     // Count items
@@ -70,6 +85,82 @@ require_once 'includes/header.php';
 ?>
 
 <div class="container-fluid" style="max-width: 1150px; margin: 0 auto;">
+    <?php if (isset($_SESSION['registration_success']) && $_SESSION['registration_success']): ?>
+    <!-- Registration Success Alert with Confetti -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-lg" role="alert" id="successAlert" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                <div class="text-center py-3">
+                    <h4 class="mb-2"><i class="bi bi-check-circle-fill"></i> Welcome to ANU Lost & Found!</h4>
+                    <p class="mb-0">Your account has been created successfully. Your Registration ID is <strong><?php echo htmlspecialchars($_SESSION['registration_id']); ?></strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        // Trigger confetti animation on page load
+        window.addEventListener('load', function() {
+            const duration = 4000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 40, spread: 360, ticks: 100, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 120 * (timeLeft / duration);
+
+                // Gold confetti from left
+                confetti(
+                    Object.assign({}, defaults, {
+                        particleCount,
+                        origin: { x: randomInRange(0.05, 0.2), y: Math.random() - 0.2 },
+                        colors: ['#FFD700', '#FFA500', '#FF8C00', '#FFE4B5', '#FFDAB9']
+                    })
+                );
+                // Gold confetti from right
+                confetti(
+                    Object.assign({}, defaults, {
+                        particleCount,
+                        origin: { x: randomInRange(0.8, 0.95), y: Math.random() - 0.2 },
+                        colors: ['#FFD700', '#FFA500', '#FF8C00', '#FFE4B5', '#FFDAB9']
+                    })
+                );
+                // Gold confetti from center
+                confetti(
+                    Object.assign({}, defaults, {
+                        particleCount: particleCount * 0.6,
+                        origin: { x: 0.5, y: Math.random() - 0.1 },
+                        colors: ['#FFD700', '#FFA500', '#FF8C00', '#FFE4B5', '#FFDAB9']
+                    })
+                );
+            }, 150);
+            
+            // Auto-dismiss banner after 4 seconds
+            setTimeout(function() {
+                const alert = document.getElementById('successAlert');
+                if (alert) {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500);
+                }
+            }, 4000);
+        });
+        
+        // Clear the registration success flag after showing
+        <?php unset($_SESSION['registration_success']); ?>
+    </script>
+    <?php endif; ?>
     <!-- Welcome Section -->
     <div class="row mb-5">
         <div class="col-12">
@@ -77,17 +168,28 @@ require_once 'includes/header.php';
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <h1 class="welcome-title">Welcome back, <?php echo htmlspecialchars($_SESSION['user_name']); ?>!</h1>
-                        <p class="welcome-text">Easily manage lost and found items, review claims, and stay connected with ANU security.</p>
-                        <div class="welcome-actions mt-4">
-                            <a href="<?php echo BASE_URL; ?>/report.php" class="btn btn-primary btn-lg me-3">
-                                <i class="bi bi-plus-circle me-2"></i>Report Item
-                            </a>
-                            <a href="<?php echo BASE_URL; ?>/search.php" class="btn btn-outline-light btn-lg">
-                                <i class="bi bi-search me-2"></i>Browse Items
-                            </a>
+                        <p class="small mb-3" style="color: white; font-weight: 500;">
+                            <i class="bi bi-hash"></i> Admission No: <strong><?php echo htmlspecialchars($_SESSION['registration_id'] ?? 'N/A'); ?></strong>
+                        </p>
+                        
+                        <!-- Student ID Card -->
+                        <div class="student-id-card mt-3 mb-4" style="background: white; border-radius: 12px; padding: 15px; max-width: 430px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+                            <!-- ID Card Image - Dynamically Generated -->
+                            <div style="display: flex; justify-content: center;">
+                                <img src="<?php echo BASE_URL; ?>/actions/generate_student_id.php?user_id=<?php echo $_SESSION['user_id']; ?>" alt="Student ID" style="width: 100%; height: auto; max-width: 430px; object-fit: contain; border-radius: 8px; border: 1px solid #ddd;">
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-4 text-center mt-4 mt-lg-0">
+                        <p class="welcome-text" style="color: white; font-weight: 500; margin-bottom: 20px;">Easily manage lost and found items, review claims, and stay connected with ANU security.</p>
+                        <div class="welcome-actions mb-4">
+                            <a href="<?php echo BASE_URL; ?>/report.php" class="btn btn-primary btn-sm me-2 mb-2">
+                                <i class="bi bi-plus-circle me-2"></i>Report Item
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>/search.php" class="btn btn-outline-light btn-sm mb-2">
+                                <i class="bi bi-search me-2"></i>Browse Items
+                            </a>
+                        </div>
                         <?php if ($userRole === 'student'): ?>
                         <div class="stats-overview">
                             <div class="stats-circle">
@@ -148,7 +250,7 @@ require_once 'includes/header.php';
                     <i class="bi bi-calendar-check"></i>
                 </div>
                 <div class="stat-content">
-                    <h3 class="stat-number"><?php echo formatDate($_SESSION['created_at']); ?></h3>
+                    <h3 class="stat-number"><?php echo formatDate($userCreatedAt); ?></h3>
                     <p class="stat-label">Member Since</p>
                 </div>
             </div>
@@ -220,71 +322,56 @@ require_once 'includes/header.php';
     </div>
     <?php endif; ?>
 
-    <!-- Recent Items -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card recent-items-card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0 text-dark">
-                        <i class="bi bi-clock-history me-2"></i>
-                        <?php 
-                            $itemsLabel = ($userRole === 'security') ? 'System Items' : 'My Reported Items';
-                            echo $itemsLabel;
-                        ?>
+    <!-- My Reported Items (Split by Type) -->
+    <div class="row mt-5">
+        <div class="col-lg-6 mb-4">
+            <!-- Items You Lost -->
+            <div class="card recent-items-card h-100">
+                <div class="card-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-search me-2"></i>Items You Lost
                     </h5>
                 </div>
                 <div class="card-body">
-                    <?php if (count($recent_items) > 0): ?>
+                    <?php 
+                    $lost_items = array_filter($recent_items, fn($item) => $item['type'] === 'lost');
+                    if (count($lost_items) > 0): 
+                    ?>
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-hover table-sm">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Item</th>
-                                        <th>Type</th>
-                                        <th>Category</th>
                                         <th>Status</th>
                                         <th>Date</th>
-                                        <th>Actions</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($recent_items as $item): ?>
+                                    <?php foreach ($lost_items as $item): ?>
                                         <tr>
                                             <td>
-                                                <div class="d-flex align-items-center">
+                                                <div class="d-flex align-items-center gap-2">
                                                     <?php if ($item['image_path']): ?>
                                                         <img src="<?php echo htmlspecialchars(BASE_URL . '/' . $item['image_path']); ?>" 
                                                              alt="<?php echo htmlspecialchars($item['title']); ?>" 
-                                                             class="me-3" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">
+                                                             class="rounded" style="width: 35px; height: 35px; object-fit: cover;">
                                                     <?php else: ?>
-                                                        <div class="item-icon bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                            <i class="bi bi-box text-primary"></i>
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                            <i class="bi bi-box text-danger" style="font-size: 1rem;"></i>
                                                         </div>
                                                     <?php endif; ?>
                                                     <div>
-                                                        <h6 class="mb-0"><?php echo htmlspecialchars($item['title']); ?></h6>
-                                                        <small class="text-muted">ID: <?php echo htmlspecialchars($item['id']); ?></small>
+                                                        <h6 class="mb-0" style="font-size: 0.9rem;"><?php echo htmlspecialchars($item['title']); ?></h6>
+                                                        <small class="text-muted"><?php echo htmlspecialchars($item['category']); ?></small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td><span class="badge bg-<?php echo $item['type'] === 'lost' ? 'danger' : 'success'; ?> rounded-pill">
-                                                <?php echo formatType($item['type']); ?>
-                                            </span></td>
-                                            <td><?php echo htmlspecialchars($item['category']); ?></td>
                                             <td>
-                                                <span class="badge status-<?php echo $item['status']; ?> rounded-pill" 
-                                                    title="<?php 
-                                                        if ($item['type'] === 'lost' && $item['status'] === 'reported') {
-                                                            echo 'Waiting for a matching found item to be reported';
-                                                        } elseif ($item['type'] === 'found' && $item['status'] === 'open') {
-                                                            echo 'Available for students to claim';
-                                                        }
-                                                    ?>">
+                                                <span class="badge status-<?php echo $item['status']; ?> rounded-pill" style="font-size: 0.75rem;">
                                                     <?php 
                                                     $status_text = formatStatus($item['status']);
-                                                    // Only show claim count for open statuses, not for final statuses like 'collected'
-                                                    $showClaimCount = !in_array($item['status'], ['collected', 'recovered', 'verified', 'approved']);
-                                                    if ($showClaimCount && isset($item['claim_count']) && $item['claim_count'] > 0) {
+                                                    if (isset($item['claim_count']) && $item['claim_count'] > 0 && !in_array($item['status'], ['collected', 'recovered'])) {
                                                         echo $status_text . ' (' . $item['claim_count'] . ')';
                                                     } else {
                                                         echo $status_text;
@@ -292,19 +379,19 @@ require_once 'includes/header.php';
                                                     ?>
                                                 </span>
                                             </td>
-                                            <td><?php echo formatDate($item['created_at']); ?></td>
+                                            <td>
+                                                <small class="text-muted"><?php echo formatDate($item['created_at']); ?></small>
+                                            </td>
                                             <td>
                                                 <?php if ($item['status'] === 'recovered' || $item['status'] === 'collected'): ?>
-                                                    <button class="btn btn-sm btn-secondary" disabled title="Item status finalized">
-                                                        <i class="bi bi-check-circle"></i> Done
+                                                    <button class="btn btn-xs btn-secondary" disabled style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                                        <i class="bi bi-check-circle"></i>
                                                     </button>
                                                 <?php else: ?>
-                                                    <button class="btn btn-sm btn-info view-status-btn" 
+                                                    <button class="btn btn-xs btn-danger view-status-btn" 
                                                         data-item-id="<?php echo $item['id']; ?>"
                                                         data-item-type="<?php echo $item['type']; ?>"
-                                                        data-search-title="<?php echo htmlspecialchars($item['title']); ?>"
-                                                        data-search-category="<?php echo htmlspecialchars($item['category']); ?>"
-                                                        data-search-location="<?php echo htmlspecialchars($item['location']); ?>">View Matches</button>
+                                                        style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">View</button>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -314,14 +401,99 @@ require_once 'includes/header.php';
                         </div>
                     <?php else: ?>
                         <div class="text-center py-5">
-                            <div class="empty-state">
-                                <i class="bi bi-box-seam display-1 text-muted mb-3"></i>
-                                <h5 class="text-muted">No items yet</h5>
-                                <p class="text-muted mb-4">Start by reporting an item or checking for found items.</p>
-                                <a href="<?php echo BASE_URL; ?>/report.php" class="btn btn-primary">
-                                    <i class="bi bi-plus-circle me-2"></i>Report Your First Item
-                                </a>
-                            </div>
+                            <i class="bi bi-search display-4 text-muted mb-3" style="opacity: 0.3;"></i>
+                            <p class="text-muted small mb-3">No lost items reported yet</p>
+                            <a href="<?php echo BASE_URL; ?>/report.php" class="btn btn-sm btn-danger">
+                                <i class="bi bi-plus-circle me-1"></i>Report Lost Item
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <!-- Items You Found -->
+            <div class="card recent-items-card h-100">
+                <div class="card-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gift me-2"></i>Items You Found
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <?php 
+                    $found_items = array_filter($recent_items, fn($item) => $item['type'] === 'found');
+                    if (count($found_items) > 0): 
+                    ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($found_items as $item): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <?php if ($item['image_path']): ?>
+                                                        <img src="<?php echo htmlspecialchars(BASE_URL . '/' . $item['image_path']); ?>" 
+                                                             alt="<?php echo htmlspecialchars($item['title']); ?>" 
+                                                             class="rounded" style="width: 35px; height: 35px; object-fit: cover;">
+                                                    <?php else: ?>
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                                            <i class="bi bi-gift text-success" style="font-size: 1rem;"></i>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <div>
+                                                        <h6 class="mb-0" style="font-size: 0.9rem;"><?php echo htmlspecialchars($item['title']); ?></h6>
+                                                        <small class="text-muted"><?php echo htmlspecialchars($item['category']); ?></small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge status-<?php echo $item['status']; ?> rounded-pill" style="font-size: 0.75rem;">
+                                                    <?php 
+                                                    $status_text = formatStatus($item['status']);
+                                                    if (isset($item['claim_count']) && $item['claim_count'] > 0 && !in_array($item['status'], ['collected', 'recovered'])) {
+                                                        echo $status_text . ' (' . $item['claim_count'] . ')';
+                                                    } else {
+                                                        echo $status_text;
+                                                    }
+                                                    ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted"><?php echo formatDate($item['created_at']); ?></small>
+                                            </td>
+                                            <td>
+                                                <?php if ($item['status'] === 'recovered' || $item['status'] === 'collected'): ?>
+                                                    <button class="btn btn-xs btn-secondary" disabled style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button class="btn btn-xs btn-success view-status-btn" 
+                                                        data-item-id="<?php echo $item['id']; ?>"
+                                                        data-item-type="<?php echo $item['type']; ?>"
+                                                        style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">View</button>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="text-center py-5">
+                            <i class="bi bi-gift display-4 text-muted mb-3" style="opacity: 0.3;"></i>
+                            <p class="text-muted small mb-3">No found items reported yet</p>
+                            <a href="<?php echo BASE_URL; ?>/report.php" class="btn btn-sm btn-success">
+                                <i class="bi bi-plus-circle me-1"></i>Report Found Item
+                            </a>
                         </div>
                     <?php endif; ?>
                 </div>

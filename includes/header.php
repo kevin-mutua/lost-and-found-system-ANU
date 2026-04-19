@@ -374,8 +374,10 @@ if ($loggedIn) {
     </nav>
 
     <?php if (in_array($currentPage, ['index.php', 'login.php', 'login_admin.php']) || !$loggedIn): ?>
-    <section class="hero-panel">
-        <div class="container py-5">
+    <section class="hero-panel" style="background-image: url('<?php echo BASE_URL; ?>/assets/images/anu_campus.jpg'); background-size: cover; background-position: center; background-attachment: fixed; position: relative;">
+        <!-- Dark overlay for better text readability -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); z-index: 1;"></div>
+        <div class="container py-5" style="position: relative; z-index: 2;">
             <div class="row align-items-center">
                 <div class="col-lg-6 text-white">
                     <span class="hero-badge">Campus Lost & Found</span>
@@ -401,8 +403,9 @@ if ($loggedIn) {
                             </div>
                             <div class="card-body">
                                 <?php if (isset($_SESSION['login_error'])): ?>
-                                    <div class="alert alert-danger py-2" role="alert">
-                                        <?php echo htmlspecialchars($_SESSION['login_error']); unset($_SESSION['login_error']); ?>
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-exclamation-circle-fill"></i> <strong>Login Failed:</strong> <?php echo htmlspecialchars($_SESSION['login_error']); unset($_SESSION['login_error']); ?>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                     </div>
                                 <?php endif; ?>
                                 <form action="<?php echo BASE_URL; ?>/auth/process_login.php" method="POST" autocomplete="off">
@@ -433,37 +436,94 @@ if ($loggedIn) {
                                 <h5 class="mb-0">Create New Account</h5>
                             </div>
                             <div class="card-body">
-                                <?php if (isset($_SESSION['register_error'])): ?>
-                                    <div class="alert alert-danger py-2" role="alert">
-                                        <?php echo htmlspecialchars($_SESSION['register_error']); unset($_SESSION['register_error']); ?>
-                                    </div>
-                                <?php endif; ?>
-                                <form action="<?php echo BASE_URL; ?>/auth/process_login.php" method="POST" autocomplete="off">
-                                    <input type="hidden" name="action" value="register">
+                                <form action="<?php echo BASE_URL; ?>/auth/register.php" method="POST" autocomplete="off" id="headerRegisterForm">
                                     <input type="text" name="fakeusernameremembered" value="" style="display:none;">
                                     <input type="password" name="fakepasswordremembered" value="" style="display:none;">
+                                    
+                                    <!-- Name and Phone -->
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <label for="reg_name" class="form-label">Full Name</label>
+                                            <input type="text" class="form-control form-control-sm" id="reg_name" name="name" placeholder="Name" autocomplete="off" required>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label for="reg_phone" class="form-label">Phone</label>
+                                            <input type="tel" class="form-control form-control-sm" id="reg_phone" name="phone" placeholder="Phone" autocomplete="off" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Date Joined and Course -->
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <label for="reg_date_joined" class="form-label" style="font-size: 0.85rem;">Date Joined</label>
+                                            <input type="month" class="form-control form-control-sm" id="reg_date_joined" name="date_joined" required onchange="headerGenerateEmail()">
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <label for="reg_course" class="form-label" style="font-size: 0.85rem;">Course</label>
+                                            <select class="form-select form-select-sm" id="reg_course" name="course" required onchange="headerGenerateEmail()">
+                                                <option value="">-- Select --</option>
+                                                <optgroup label="Law">
+                                                    <option value="llb">LLB</option>
+                                                    <option value="crj">Criminal Justice</option>
+                                                </optgroup>
+                                                <optgroup label="Business">
+                                                    <option value="mba">MBA</option>
+                                                    <option value="bca">B.Com Acct</option>
+                                                    <option value="bcb">B.Com Finance</option>
+                                                    <option value="bcm">B.Com Marketing</option>
+                                                    <option value="ibm">Int'l Bus Mgmt</option>
+                                                    <option value="hrm">HR Management</option>
+                                                    <option value="cbm">Cert Bus Mgmt</option>
+                                                    <option value="cps">CPSP-K</option>
+                                                </optgroup>
+                                                <optgroup label="Science & Tech">
+                                                    <option value="abt">BBIT</option>
+                                                    <option value="acs">CS</option>
+                                                    <option value="ait">MSc AIT</option>
+                                                    <option value="erm">MSc ERM</option>
+                                                    <option value="psc">Procurement</option>
+                                                    <option value="enm">Env Mgmt</option>
+                                                    <option value="dit">Dip IT</option>
+                                                    <option value="dmo">Dip Mobile</option>
+                                                    <option value="iad">Int'l Adv Dip CS</option>
+                                                </optgroup>
+                                                <optgroup label="Humanities">
+                                                    <option value="pcs">Peace Studies</option>
+                                                    <option value="mce">Mass Comm Elec</option>
+                                                    <option value="mcp">Mass Comm Print</option>
+                                                    <option value="edu">Education</option>
+                                                </optgroup>
+                                                <optgroup label="Religion">
+                                                    <option value="mdv">Master Divinity</option>
+                                                    <option value="thl">Theology</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Auto-generated Email -->
                                     <div class="mb-2">
-                                        <label for="reg_registration_id" class="form-label">Registration ID</label>
-                                        <input type="text" class="form-control form-control-sm" id="reg_registration_id" name="registration_id" placeholder="e.g. ANU123456" required>
+                                        <label for="reg_email" class="form-label">Email (Auto-generated)</label>
+                                        <input type="email" class="form-control form-control-sm" id="reg_email" name="email" placeholder="Will auto-fill" readonly style="background-color: #f0f0f0;">
                                     </div>
-                                    <div class="mb-2">
-                                        <label for="reg_name" class="form-label">Full Name</label>
-                                        <input type="text" class="form-control form-control-sm" id="reg_name" name="name" placeholder="Full Name" required>
+                                    
+                                    <!-- Hidden Registration ID -->
+                                    <input type="hidden" id="reg_registration_id" name="registration_id">
+                                    
+                                    <!-- Password -->
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <label for="reg_password" class="form-label">Password</label>
+                                            <input type="password" class="form-control form-control-sm" id="reg_password" name="password" placeholder="Password" autocomplete="off" required>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <label for="reg_confirm_password" class="form-label">Confirm</label>
+                                            <input type="password" class="form-control form-control-sm" id="reg_confirm_password" name="confirm_password" placeholder="Confirm" autocomplete="off" required>
+                                        </div>
                                     </div>
-                                    <div class="mb-2">
-                                        <label for="reg_email" class="form-label">Email</label>
-                                        <input type="email" class="form-control form-control-sm" id="reg_email" name="email" placeholder="Email" autocomplete="off" required>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label for="reg_password" class="form-label">Password</label>
-                                        <input type="password" class="form-control form-control-sm" id="reg_password" name="password" placeholder="Password" autocomplete="off" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="reg_confirm_password" class="form-label">Confirm Password</label>
-                                        <input type="password" class="form-control form-control-sm" id="reg_confirm_password" name="confirm_password" placeholder="Confirm Password" autocomplete="off" required>
-                                    </div>
+                                    
                                     <div class="d-grid">
-                                        <button type="submit" class="btn btn-danger btn-sm">Register</button>
+                                        <button type="submit" class="btn btn-danger btn-sm" id="reg_submitBtn" disabled>Register</button>
                                     </div>
                                 </form>
                                 <div class="text-center mt-2">
@@ -512,5 +572,64 @@ function scrollToForm(formType) {
         if (loginForm) loginForm.style.display = 'none';
         if (registerForm) registerForm.style.display = 'block';
     }
+}
+
+function headerGenerateEmail() {
+    const date_joined = document.getElementById('reg_date_joined').value;
+    const course = document.getElementById('reg_course').value;
+    const email = document.getElementById('reg_email');
+    const registration_id = document.getElementById('reg_registration_id');
+    const submitBtn = document.getElementById('reg_submitBtn');
+    
+    if (!date_joined || !course) {
+        email.value = '';
+        registration_id.value = '';
+        submitBtn.disabled = true;
+        return;
+    }
+    
+    // Parse date
+    const [year, month] = date_joined.split('-');
+    const yearShort = year.slice(2);
+    
+    // Map month to code
+    const monthMap = {
+        '01': 'm', '02': 'm', '03': 'm', '04': 'm', '05': 'm', '06': 'j',
+        '07': 'j', '08': 'j', '09': 's', '10': 's', '11': 's', '12': 's'
+    };
+    const monthCode = monthMap[month];
+    
+    // Course to school+program code
+    const courseCodeMap = {
+        'llb': '02llb', 'crj': '02crj',
+        'mba': '03mba', 'bca': '03bca', 'bcb': '03bcb', 'bcm': '03bcm', 'ibm': '03ibm',
+        'hrm': '03hrm', 'cbm': '03cbm', 'cps': '03cps',
+        'abt': '01abt', 'acs': '01acs', 'ait': '01ait', 'erm': '01erm', 'psc': '01psc',
+        'enm': '01enm', 'dit': '01dit', 'dmo': '01dmo', 'iad': '01iad',
+        'pcs': '04pcs', 'mce': '04mce', 'mcp': '04mcp', 'edu': '04edu',
+        'mdv': '05mdv', 'thl': '05thl'
+    };
+    
+    const progCode = courseCodeMap[course];
+    
+    fetch('<?php echo BASE_URL; ?>/actions/get_next_student_number.php?course=' + course + '&date=' + date_joined)
+        .then(response => response.json())
+        .then(data => {
+            const studentNum = String(data.next_number).padStart(3, '0');
+            const regId = yearShort + monthCode + progCode + studentNum;
+            const generatedEmail = regId.toLowerCase() + '@anu.ac.ke';
+            
+            email.value = generatedEmail;
+            registration_id.value = regId;
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const regId = yearShort + monthCode + progCode + '001';
+            const generatedEmail = regId.toLowerCase() + '@anu.ac.ke';
+            email.value = generatedEmail;
+            registration_id.value = regId;
+            submitBtn.disabled = false;
+        });
 }
 </script>
