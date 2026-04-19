@@ -8,7 +8,7 @@
 
 ## 📸 System Overview
 
-![ANU Lost and Found System](https://raw.githubusercontent.com/lost-and-found-system-ANU/main/screenshot.png)
+![Campus Lost and Found System](https://raw.githubusercontent.com/kevin-mutua/lost-and-found-system-ANU/main/screenshot.png)
 
 The **Campus Lost & Found System** is a web-based platform that helps students and campus staff reunite lost items with their owners. It features intelligent automatic matching, real-time notifications, role-based workflows, and a mobile-friendly interface.
 
@@ -48,8 +48,8 @@ Visit **[https://anulostandfound.free.nf/](https://anulostandfound.free.nf/)** t
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/campus-lost-and-found.git
-cd campus-lost-and-found
+git clone https://github.com/kevin-mutua/lost-and-found-system-ANU.git
+cd lost-and-found-system-ANU
 
 # 2. Set up XAMPP
 # - Place folder in htdocs/
@@ -206,8 +206,8 @@ Administrators can:
 
 ```bash
 # Option A: Using Git
-git clone https://github.com/your-username/campus-lost-and-found.git
-cd campus-lost-and-found
+git clone https://github.com/kevin-mutua/lost-and-found-system-ANU.git
+cd lost-and-found-system-ANU
 
 # Option B: Direct download
 # Download ZIP from GitHub and extract to your server
@@ -554,7 +554,7 @@ Just include the original license and copyright notice.
 ## 📞 Support & Contact
 
 - **Live Demo**: https://anulostandfound.free.nf/
-- **Issues**: [GitHub Issues](https://github.com/your-username/campus-lost-and-found/issues)
+- **Issues**: [GitHub Issues](https://github.com/kevin-mutua/lost-and-found-system-ANU/issues)
 - **Email**: reports@anu.ac.ke
 - **Documentation**: See [SETUP.md](SETUP.md) for detailed setup guide
 
